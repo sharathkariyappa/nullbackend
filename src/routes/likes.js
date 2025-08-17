@@ -1,0 +1,60 @@
+// src/routes/likes.js
+import express from "express";
+import { db } from "../firebase.js";
+
+const router = express.Router();
+
+// Like a user
+router.post("/", async (req, res) => {
+  try {
+    const { targetWallet, likerWallet } = req.body;
+
+    if (!targetWallet || !likerWallet) {
+      return res.status(400).json({ error: "Missing wallet addresses" });
+    }
+    if (targetWallet === likerWallet) {
+      return res.status(400).json({ error: "You cannot like yourself" });
+    }
+
+    const likeRef = db.collection("likes").doc(`${targetWallet}_${likerWallet}`);
+
+    const likeDoc = await likeRef.get();
+    if (likeDoc.exists) {
+      return res.status(400).json({ error: "You already liked this user" });
+    }
+
+    const likeData = {
+      targetWallet,
+      likerWallet,
+      createdAt: new Date(),
+    };
+
+    await likeRef.set(likeData);
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Error liking user:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get like counts for all wallets
+router.get("/counts", async (_req, res) => {
+  try {
+    const likesSnapshot = await db.collection("likes").get();
+    const counts = {};
+
+    likesSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const targetWallet = data.targetWallet;
+      counts[targetWallet] = (counts[targetWallet] || 0) + 1;
+    });
+
+    res.json(counts);
+  } catch (err) {
+    console.error("Error getting like counts:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+export { router as likesRouter };
