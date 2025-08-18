@@ -30,8 +30,8 @@ scoreRouter.post("/", requireGitHub, async (req, res) => {
     if (useExternalModel) {
       const scoreResult = await flaskModelScore(gh, oc);
       return res.json({ 
-        github: gh, 
-        onchain: oc, 
+        // github: gh, 
+        // onchain: oc, 
         score: scoreResult.score 
       });
     }
