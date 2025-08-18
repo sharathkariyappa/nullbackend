@@ -80,7 +80,7 @@ function calculateOnchainScore(ethBalance, txCount, contractDeployments, tokenBa
 }
 
 /** Local calculation replacing Flask model */
-async function flaskModelScore(gh, oc) {
+export async function flaskModelScore(gh, oc) {
     try {
         // Calculate GitHub score
         const githubScore = calculateGithubScore(
@@ -112,5 +112,3 @@ async function flaskModelScore(gh, oc) {
         throw new Error("Failed to calculate role");
     }
 }
-
-module.exports = { flaskModelScore };
