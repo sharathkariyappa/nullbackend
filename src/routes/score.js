@@ -9,7 +9,7 @@ export const scoreRouter = Router();
 
 /**
  * POST /api/score
- * body: { githubUsername: string, address: string, useExternalModel?: boolean }
+ * body: { githubUsername: string, address: string, calculateScore?: boolean }
  */
 scoreRouter.post("/", requireGitHub, async (req, res) => {
   const { githubUsername, address, useExternalModel } = req.body || {};
@@ -26,13 +26,14 @@ scoreRouter.post("/", requireGitHub, async (req, res) => {
       fetchOnchainStats(address)
     ]);
 
+    // If score calculation is requested
     if (useExternalModel) {
-      try {
-        const model = await flaskModelScore(gh, oc);
-        return res.json({ model });
-      } catch {
-        return res.status(500).json({ error: "External model failed" });
-      }
+      const scoreResult = await flaskModelScore(gh, oc);
+      return res.json({ 
+        github: gh, 
+        onchain: oc, 
+        score: scoreResult.score 
+      });
     }
 
     return res.json({ github: gh, onchain: oc });
