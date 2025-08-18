@@ -1,4 +1,3 @@
-const axios = require('axios');
 
 function calculateGithubScore(totalContributions, pullRequests, issues, repositoriesContributedTo, followers, repositories) {
     let activityScore = 0;
