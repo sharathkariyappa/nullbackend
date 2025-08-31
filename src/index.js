@@ -10,6 +10,8 @@ import { scoreRouter } from "./routes/score.js";
 import { leaderboardRouter } from "./routes/leaderboard.js";
 import { earlyAccessRouter } from "./routes/earlyaccess.js";
 import { likesRouter } from "./routes/likes.js";
+import { vcRouter } from "./routes/vc.js";
+import  router  from "./routes/contract.js";
 
 const app = express();
 
@@ -43,6 +45,8 @@ app.use("/api/score", scoreRouter);
 app.use("/api/leaderboard", leaderboardRouter);
 app.use("/api/early-access", earlyAccessRouter);
 app.use("/api/likes", likesRouter);
+app.use("/api/vc", vcRouter);
+app.use("/api/contract", router);
 
 // Error handler (no TypeScript types now)
 app.use((err, _req, res, _next) => {

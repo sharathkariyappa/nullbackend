@@ -10,6 +10,7 @@ export const cfg = {
   env: process.env.NODE_ENV ?? "development",
   frontendUrl: required("FRONTEND_URL"),
   backendUrl: required("BACKEND_URL"),
+  vcissuerkey: required("VC_ISSUER_KEY"),
   cookie: {
     name: process.env.COOKIE_NAME ?? "github_token",
     domain: process.env.COOKIE_DOMAIN ?? "localhost",

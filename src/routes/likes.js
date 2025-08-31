@@ -57,4 +57,22 @@ router.get("/counts", async (_req, res) => {
   }
 });
 
+router.get("/check", async (req, res) => {
+  try {
+    const { targetWallet, likerWallet } = req.query;
+
+    if (!targetWallet || !likerWallet) {
+      return res.status(400).json({ error: "Missing wallet addresses" });
+    }
+
+    const likeRef = db.collection("likes").doc(`${targetWallet}_${likerWallet}`);
+    const likeDoc = await likeRef.get();
+
+    return res.json({ liked: likeDoc.exists });
+  } catch (err) {
+    console.error("Error checking like status:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export { router as likesRouter };
