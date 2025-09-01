@@ -27,10 +27,16 @@ export async function saveVC({ address, vcId, credentialHash, status }) {
 
 // Fetch all VCs for a wallet address
 export async function getVC(address) {
-  if (!address) return [];
-  const snapshot = await db.collection("vc").where("address", "==", address.toLowerCase()).get();
-  if (snapshot.empty) return [];
-  return snapshot.docs.map((d) => d.data());
+  if (!address) return null;
+
+  const snapshot = await db
+    .collection("vc")
+    .where("address", "==", address.toLowerCase())
+    .get();
+
+  if (snapshot.empty) return null;
+
+  return snapshot.docs[0].data();
 }
 
 // Fetch VC by VC ID

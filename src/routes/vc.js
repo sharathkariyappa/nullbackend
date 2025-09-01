@@ -8,6 +8,7 @@ import { flaskModelScore } from "../services/scoring.js";
 import { saveVC, getVC } from "../services/vcStatus.js";
 import { ethers } from "ethers";
 import { cfg } from "../config.js";
+import { jwtVerify } from "jose";
 
 export const vcRouter = Router();
 
@@ -211,3 +212,63 @@ vcRouter.get("/by-wallet/:address", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch VC for wallet" });
   }
 });
+
+// Resolve and verify VC by wallet address
+vcRouter.get("/resolve/:address", async (req, res) => {
+  try {
+    const walletAddress = req.params.address.toLowerCase();
+    // console.log(`Resolving VC for wallet: ${walletAddress}`);
+
+    const record = await getVC(walletAddress);
+    // console.log("Fetched Record:", record);
+
+    if (!record || !record.credentialHash) {
+      return res.status(404).json({ 
+        verified: false, 
+        message: "No VC found for this wallet." 
+      });
+    }
+
+    const key = await initializeKey();
+    console.log("Key Loaded");
+
+    let payload;
+    try {
+      const { payload: verifiedPayload } = await jwtVerify(record.credentialHash, key, {
+        issuer: ISSUER_DID,
+      });
+      payload = verifiedPayload;
+    } catch (err) {
+      console.error("JWT verification failed:", err);
+      return res.status(400).json({
+        verified: false,
+        message: "Invalid or tampered VC token.",
+      });
+    }
+
+    // Additional checks...
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && now > payload.exp) {
+      return res.status(403).json({
+        verified: false,
+        message: "VC is expired.",
+      });
+    }
+
+    return res.json({
+      verified: true,
+      wallet: walletAddress,
+      vc: payload.vc,
+      issuedAt: payload.iat,
+      expiresAt: payload.exp,
+      status: record.status,
+    });
+  } catch (err) {
+    console.error("VC Resolve Error:", err.stack || err);
+    res.status(500).json({ 
+      verified: false,
+      message: "Internal server error." 
+    });
+  }
+});
+
